@@ -417,9 +417,9 @@ each(keys(Terminal.defaults), function(key) {
 Terminal.focus = null;
 
 Terminal.prototype.focus = function() {
-  if (this.selectionMode) return;
-
   var self = this;
+
+  self.selectionMode = false;
 
   window.setTimeout(function() {
     self.inputElement.focus();
@@ -1070,7 +1070,9 @@ Terminal.prototype.bindMouse = function() {
     sendButton(ev);
 
     // ensure focus
-    self.focus();
+    if (!self.selectionMode) {
+      self.focus();
+    }
 
     // fix for odd bug
     //if (self.vt200Mouse && !self.normalMouse) {
@@ -2411,6 +2413,17 @@ Terminal.prototype.writeln = function(data) {
 Terminal.prototype.keyDown = function(ev) {
   var self = this
     , key = null;
+
+  if (self.selectionMode) {
+    // selection mode
+    if (((this.isMac && ev.metaKey) || (!this.isMac && ev.ctrlKey)) && ev.keyCode === 67) {
+      // if cmd/ctrl+c
+      return;
+    } else if (ev.keyCode >= 48 && ev.keyCode <= 222 && [91, 92, 93, 144, 145].indexOf(ev.keyCode) === -1) {
+      // if text entry, cancel selection mode
+      self.inputElement.focus();
+    }
+  }
 
   switch (ev.keyCode) {
     // backspace
