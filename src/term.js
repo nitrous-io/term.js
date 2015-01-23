@@ -2796,6 +2796,8 @@ Terminal.prototype.resize = function(x, y) {
   // screen buffer. just set it
   // to null for now.
   this.normal = null;
+
+  this.emit('resize', x, y);
 };
 
 Terminal.prototype.updateRange = function(y) {
@@ -5546,6 +5548,48 @@ Terminal.prototype.keySearch = function(ev, key) {
 
   return false;
 };
+
+Terminal.prototype.sizeToFit = function() {
+  var viewPortWidth = this.element.clientWidth;
+  var viewPortHeight = this.element.clientHeight;
+
+  var tempDiv = document.createElement('div');
+  tempDiv.className = 'terminal';
+  tempDiv.style.width = '0';
+  tempDiv.style.height = '0';
+  tempDiv.style.visibility = 'hidden';
+
+  var rowDiv = document.createElement('div');
+  rowDiv.style.position = 'absolute';
+  rowDiv.style.color = 'white';
+  rowDiv.innerHTML = 'W';
+  tempDiv.appendChild(rowDiv);
+
+  this.containerElement.insertBefore(tempDiv, this.containerElement.children[0]);
+
+  // determine number of columns
+  var cols;
+  for (cols = 1; cols < 2000; cols ++) {
+    rowDiv.innerHTML += 'W';
+    if (rowDiv.offsetWidth >= viewPortWidth) {
+      break;
+    }
+  }
+  rowDiv.innerHTML = 'W';
+
+  // determine number of rows
+  var rows;
+  for (rows = 1; rows < 2000; rows ++) {
+    rowDiv.innerHTML += '<br />W';
+    if (rowDiv.offsetHeight >= viewPortHeight) {
+      break;
+    }
+  }
+
+  rowDiv.parentNode.removeChild(rowDiv);
+  tempDiv.parentNode.removeChild(tempDiv);
+  this.resize(cols, rows);
+}
 
 /**
  * Character Sets
