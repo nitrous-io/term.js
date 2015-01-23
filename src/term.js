@@ -397,7 +397,6 @@ Terminal.defaults = {
   scrollback: 1000,
   screenKeys: false,
   debug: false,
-  useStyle: false
   // programFeatures: false,
   // focusKeys: false,
 };
@@ -475,10 +474,6 @@ Terminal.prototype.initGlobal = function() {
 
   if (this.isMobile) {
     this.fixMobile(document);
-  }
-
-  if (this.useStyle) {
-    Terminal.insertStyle(document, this.colors[256], this.colors[257]);
   }
 };
 
@@ -636,52 +631,6 @@ Terminal.prototype.fixMobile = function(document) {
       self.send(value + '\r');
     });
   }
-};
-
-/**
- * Insert a default style
- */
-
-Terminal.insertStyle = function(document, bg, fg) {
-  var style = document.getElementById('term-style');
-  if (style) return;
-
-  var head = document.getElementsByTagName('head')[0];
-  if (!head) return;
-
-  var style = document.createElement('style');
-  style.id = 'term-style';
-
-  // textContent doesn't work well with IE for <style> elements.
-  style.innerHTML = ''
-    + '.terminal {\n'
-    + '  float: left;\n'
-    + '  border: ' + bg + ' solid 5px;\n'
-    + '  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;\n'
-    + '  font-size: 11px;\n'
-    + '  color: ' + fg + ';\n'
-    + '  background: ' + bg + ';\n'
-    + '}\n'
-    + '\n'
-    + '.terminal-cursor {\n'
-    + '  color: ' + bg + ';\n'
-    + '  background: ' + fg + ';\n'
-    + '}\n';
-
-  // var out = '';
-  // each(Terminal.colors, function(color, i) {
-  //   if (i === 256) {
-  //     out += '\n.term-bg-color-default { background-color: ' + color + '; }';
-  //   }
-  //   if (i === 257) {
-  //     out += '\n.term-fg-color-default { color: ' + color + '; }';
-  //   }
-  //   out += '\n.term-bg-color-' + i + ' { background-color: ' + color + '; }';
-  //   out += '\n.term-fg-color-' + i + ' { color: ' + color + '; }';
-  // });
-  // style.innerHTML += out + '\n';
-
-  head.insertBefore(style, head.firstChild);
 };
 
 /**
