@@ -78,4 +78,6 @@ all code is your original work. `</legalese>`
 
 ## License
 
-Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
+MIT License
+Copyright (c) 2012-2013, Christopher Jeffrey
+Portions Copyright (c) 2012-2015 Nitrous Inc. (https://www.nitrous.io/)
