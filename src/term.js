@@ -211,6 +211,7 @@ function Terminal(options) {
   this.insertMode = false;
   this.wraparoundMode = false;
   this.normal = null;
+  this.selectionMode = false;
 
   // select modes
   this.prefixMode = false;
@@ -416,10 +417,14 @@ each(keys(Terminal.defaults), function(key) {
 Terminal.focus = null;
 
 Terminal.prototype.focus = function() {
+  if (this.selectionMode) return;
+
   var self = this;
+
   window.setTimeout(function() {
     self.inputElement.focus();
   }, 0);
+
   if (Terminal.focus === this) return;
 
   if (Terminal.focus) {
@@ -713,15 +718,6 @@ Terminal.prototype.open = function(parent) {
   // Ensure there is a Terminal.focus.
   this.focus();
 
-  // Bind to DOM events related
-  // to focus and paste behavior.
-  on(this.element, 'focus', function() {
-    self.focus();
-    if (self.isMobile) {
-      Terminal._textarea.focus();
-    }
-  });
-
   on(this.element, 'blur', function() {
     self.redrawCursor();
   });
@@ -730,10 +726,6 @@ Terminal.prototype.open = function(parent) {
   // on(this.element, 'blur', function() {
   //   self.blur();
   // });
-
-  on(this.element, 'click', function() {
-    self.focus();
-  });
 
   // Clickable paste workaround, using contentEditable.
   // This probably shouldn't work,
@@ -1104,6 +1096,24 @@ Terminal.prototype.bindMouse = function() {
   //if (self.normalMouse) {
   //  on(self.document, 'mousemove', sendMove);
   //}
+
+  // if any text is selected on mouse up, enter selection mode
+  on(el, 'mouseup', function(ev) {
+    if(window.getSelection) {
+      var selectedText = window.getSelection().toString();
+      if (selectedText.length > 0) {
+        self.selectionMode = true;
+      }
+    }
+    // selection clearance only happens after mouseup event
+    window.setTimeout(function() {
+      var selectedText = window.getSelection().toString();
+      if (selectedText.length === 0) {
+        self.selectionMode = false;
+        self.focus();
+      }
+    }, 0);
+  });
 
   on(el, wheelEvent, function(ev) {
     if (!self.mouseEvents) return;
