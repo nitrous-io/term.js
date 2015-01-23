@@ -330,7 +330,7 @@ Terminal.xtermColors = [
 // Colors 0-15 + 16-255
 // Much thanks to TooTallNate for writing this.
 Terminal.colors = (function() {
-  var colors = Terminal.tangoColors.slice()
+  var colors = Terminal.xtermColors.slice()
     , r = [0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff]
     , i;
 
