@@ -1184,6 +1184,7 @@ Terminal.prototype.refresh = function(start, end) {
     , ch
     , width
     , data
+    , data2
     , attr
     , bg
     , fg
@@ -1226,7 +1227,10 @@ Terminal.prototype.refresh = function(start, end) {
       data = line[i][0];
       ch = line[i][1];
 
-      if (i === x) data = -1;
+      if (i === x) {
+        data2 = data;
+        data = -1;
+      }
 
       if (data !== attr) {
         if (attr !== this.defAttr) {
@@ -1234,72 +1238,74 @@ Terminal.prototype.refresh = function(start, end) {
         }
         if (data !== this.defAttr) {
           if (data === -1) {
-            out += '<span class="reverse-video terminal-cursor">';
+            bg = (data2 >> 9) & 0x1ff;
+            fg = data2 & 0x1ff;
+            flags = data2 >> 18;
           } else {
-            out += '<span style="';
-
-            bg = data & 0x1ff;
             fg = (data >> 9) & 0x1ff;
+            bg = data & 0x1ff;
             flags = data >> 18;
-
-            // bold
-            if (flags & 1) {
-              if (!Terminal.brokenBold) {
-                out += 'font-weight:bold;';
-              }
-              // See: XTerm*boldColors
-              if (fg < 8) fg += 8;
-            }
-
-            // underline
-            if (flags & 2) {
-              out += 'text-decoration:underline;';
-            }
-
-            // blink
-            if (flags & 4) {
-              if (flags & 2) {
-                out = out.slice(0, -1);
-                out += ' blink;';
-              } else {
-                out += 'text-decoration:blink;';
-              }
-            }
-
-            // inverse
-            if (flags & 8) {
-              bg = (data >> 9) & 0x1ff;
-              fg = data & 0x1ff;
-              // Should inverse just be before the
-              // above boldColors effect instead?
-              if ((flags & 1) && fg < 8) fg += 8;
-            }
-
-            // invisible
-            if (flags & 16) {
-              out += 'visibility:hidden;';
-            }
-
-            // out += '" class="'
-            //   + 'term-bg-color-' + bg
-            //   + ' '
-            //   + 'term-fg-color-' + fg
-            //   + '">';
-
-            if (bg !== 256) {
-              out += 'background-color:'
-                + this.colors[bg]
-                + ';';
-            }
-
-            if (fg !== 257) {
-              out += 'color:'
-                + this.colors[fg]
-                + ';';
-            }
-
-            out += '">';
           }
+
+          out += '<span style="';
+
+          // bold
+          if (flags & 1) {
+            if (!Terminal.brokenBold) {
+              out += 'font-weight:bold;';
+            }
+            // See: XTerm*boldColors
+            if (fg < 8) fg += 8;
+          }
+
+          // underline
+          if (flags & 2) {
+            out += 'text-decoration:underline;';
+          }
+
+          // blink
+          if (flags & 4) {
+            if (flags & 2) {
+              out = out.slice(0, -1);
+              out += ' blink;';
+            } else {
+              out += 'text-decoration:blink;';
+            }
+          }
+
+          // inverse
+          if (flags & 8) {
+            bg = (data >> 9) & 0x1ff;
+            fg = data & 0x1ff;
+            // Should inverse just be before the
+            // above boldColors effect instead?
+            if ((flags & 1) && fg < 8) fg += 8;
+          }
+
+          // invisible
+          if (flags & 16) {
+            out += 'visibility:hidden;';
+          }
+
+          // out += '" class="'
+          //   + 'term-bg-color-' + bg
+          //   + ' '
+          //   + 'term-fg-color-' + fg
+          //   + '">';
+
+          if (bg !== 256) {
+            out += 'background-color:'
+              + this.colors[bg]
+              + ';';
+          }
+
+          if (fg !== 257) {
+            out += 'color:'
+              + this.colors[fg]
+              + ';';
+          }
+
+          out += '">';
         }
       }
 
