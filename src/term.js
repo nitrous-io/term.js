@@ -2557,7 +2557,13 @@ Terminal.prototype.keyDown = function(ev) {
     default:
       // a-z and space
       if (ev.ctrlKey && !ev.altKey) {
-        if (ev.keyCode >= 65 && ev.keyCode <= 90) {
+        if (!this.isMac && ev.shiftKey && ev.keyCode === 86) {
+          // CTRL+SHIFT+V on Chrome on non-Mac systems
+          key = '';
+          window.setTimeout(function() {
+            self.commitInput('', ev);
+          }, 20);
+        } else if (ev.keyCode >= 65 && ev.keyCode <= 90) {
           // Ctrl-A
           if (this.screenKeys) {
             if (!this.prefixMode && !this.selectMode && ev.keyCode === 65) {
