@@ -2414,10 +2414,16 @@ Terminal.prototype.keyDown = function(ev) {
   var self = this
     , key = null;
 
+  // detect cmd/ctrl+c
+  var copying = ((this.isMac && ev.metaKey) || (!this.isMac && ev.ctrlKey)) && ev.keyCode === 67;
+
   if (self.selectionMode) {
     // selection mode
-    if (((this.isMac && ev.metaKey) || (!this.isMac && ev.ctrlKey)) && ev.keyCode === 67) {
-      // if cmd/ctrl+c
+    if (copying) {
+      if (!this.isMac && copying && ev.shiftKey && document.execCommand) {
+        document.execCommand('copy', true, null);
+        return cancel(ev);
+      }
       return;
     } else if (ev.keyCode >= 48 && ev.keyCode <= 222 && [91, 92, 93, 144, 145].indexOf(ev.keyCode) === -1) {
       // if text entry, cancel selection mode
