@@ -392,7 +392,6 @@ Terminal.defaults = {
   convertEol: false,
   termName: 'xterm',
   geometry: [80, 24],
-  cursorBlink: true,
   visualBell: false,
   popOnBell: false,
   scrollback: 1000,
@@ -743,9 +742,6 @@ Terminal.prototype.open = function(parent) {
   // Ensure there is a Terminal.focus.
   this.focus();
 
-  // Start blinking the cursor.
-  this.startBlink();
-
   // Bind to DOM events related
   // to focus and paste behavior.
   on(this.element, 'focus', function() {
@@ -753,6 +749,10 @@ Terminal.prototype.open = function(parent) {
     if (self.isMobile) {
       Terminal._textarea.focus();
     }
+  });
+
+  on(this.element, 'blur', function() {
+    self.redrawCursor();
   });
 
   // This causes slightly funky behavior.
@@ -1190,7 +1190,8 @@ Terminal.prototype.refresh = function(start, end) {
     , fg
     , flags
     , row
-    , parent;
+    , parent
+    , focused = Terminal.focus === this;
 
   if (end - start >= this.rows / 2) {
     parent = this.element.parentNode;
@@ -1238,16 +1239,26 @@ Terminal.prototype.refresh = function(start, end) {
         }
         if (data !== this.defAttr) {
           if (data === -1) {
-            bg = (data2 >> 9) & 0x1ff;
-            fg = data2 & 0x1ff;
+            out += '<span class="terminal-cursor" style="';
+
+            if (focused) {
+              bg = (data2 >> 9) & 0x1ff;
+              fg = data2 & 0x1ff;
+            } else {
+              bg = data2 & 0x1ff;
+              fg = (data2 >> 9) & 0x1ff;
+
+              out += 'outline:1px solid '
+                + Terminal.colors[fg]
+                + ';';
+            }
             flags = data2 >> 18;
           } else {
             fg = (data >> 9) & 0x1ff;
             bg = data & 0x1ff;
             flags = data >> 18;
+            out += '<span style="';
           }
-
-          out += '<span style="';
 
           // bold
           if (flags & 1) {
@@ -1342,35 +1353,15 @@ Terminal.prototype.refresh = function(start, end) {
   if (parent) parent.appendChild(this.element);
 };
 
-Terminal.prototype._cursorBlink = function() {
-  if (Terminal.focus !== this) return;
-  this.cursorState ^= 1;
+Terminal.prototype.redrawCursor = function() {
   this.refresh(this.y, this.y);
 };
 
 Terminal.prototype.showCursor = function() {
   if (!this.cursorState) {
     this.cursorState = 1;
-    this.refresh(this.y, this.y);
-  } else {
-    // Temporarily disabled:
-    // this.refreshBlink();
   }
-};
-
-Terminal.prototype.startBlink = function() {
-  if (!this.cursorBlink) return;
-  var self = this;
-  this._blinker = function() {
-    self._cursorBlink();
-  };
-  this._blink = setInterval(this._blinker, 500);
-};
-
-Terminal.prototype.refreshBlink = function() {
-  if (!this.cursorBlink) return;
-  clearInterval(this._blink);
-  this._blink = setInterval(this._blinker, 500);
+  this.redrawCursor();
 };
 
 Terminal.prototype.scroll = function() {
