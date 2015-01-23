@@ -26,9 +26,24 @@
     background: #000;
   }
 
-  .terminal-cursor {
+  .terminal-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminal-input {
+    position: absolute;
+    top: 0;
+    left: -1000%;
+    background: rgba(255, 255, 255, 0.75);
     color: #000;
-    background: #f0f0f0;
+    border: none;
+    outline: none;
+    width: 100%;
+  }
+
+  .terminal-input.visible {
+    left: 0%;
   }
 
 </style>

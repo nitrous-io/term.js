@@ -54,7 +54,8 @@
  */
 
 var window = this
-  , document = this.document;
+  , document = this.document
+  , nextTerminalId = 1;
 
 /**
  * EventEmitter
@@ -415,6 +416,10 @@ each(keys(Terminal.defaults), function(key) {
 Terminal.focus = null;
 
 Terminal.prototype.focus = function() {
+  var self = this;
+  window.setTimeout(function() {
+    self.inputElement.focus();
+  }, 0);
   if (Terminal.focus === this) return;
 
   if (Terminal.focus) {
@@ -515,7 +520,8 @@ Terminal.bindKeys = function(document) {
         || target === Terminal.focus.document
         || target === Terminal.focus.body
         || target === Terminal._textarea
-        || target === Terminal.focus.parent) {
+        || target === Terminal.focus.parent
+        || target === Terminal.focus.inputElement) {
       return Terminal.focus.keyDown(ev);
     }
   }, true);
@@ -529,7 +535,8 @@ Terminal.bindKeys = function(document) {
         || target === Terminal.focus.document
         || target === Terminal.focus.body
         || target === Terminal._textarea
-        || target === Terminal.focus.parent) {
+        || target === Terminal.focus.parent
+        || target === Terminal.focus.inputElement) {
       return Terminal.focus.keyPress(ev);
     }
   }, true);
@@ -679,7 +686,19 @@ Terminal.prototype.open = function(parent) {
     this.element.appendChild(div);
     this.children.push(div);
   }
-  this.parent.appendChild(this.element);
+
+  this.inputElement = document.createElement('input');
+  this.inputElement.className = 'terminal-input';
+  this.inputElement.type = 'text';
+
+  this.containerElement = document.createElement('div');
+  this.containerElement.type = 'text';
+  this.containerElement.className = 'terminal-container';
+  this.containerElement.id = 'terminal_' + nextTerminalId++;
+
+  this.containerElement.appendChild(this.element);
+  this.containerElement.appendChild(this.inputElement);
+  this.parent.appendChild(this.containerElement);
 
   // Draw the screen.
   this.refresh(0, this.rows - 1);
@@ -709,7 +728,7 @@ Terminal.prototype.open = function(parent) {
   //   self.blur();
   // });
 
-  on(this.element, 'mousedown', function() {
+  on(this.element, 'click', function() {
     self.focus();
   });
 
@@ -753,6 +772,7 @@ Terminal.prototype.open = function(parent) {
   // as well as the iPad fix.
   setTimeout(function() {
     self.element.focus();
+    self.inputElement.focus();
   }, 100);
 };
 
@@ -2522,7 +2542,7 @@ Terminal.prototype.keyDown = function(ev) {
       break;
     default:
       // a-z and space
-      if (ev.ctrlKey) {
+      if (ev.ctrlKey && !ev.altKey) {
         if (ev.keyCode >= 65 && ev.keyCode <= 90) {
           // Ctrl-A
           if (this.screenKeys) {
@@ -2562,7 +2582,7 @@ Terminal.prototype.keyDown = function(ev) {
           // ^] - group sep
           key = String.fromCharCode(29);
         }
-      } else if ((!this.isMac && ev.altKey) || (this.isMac && ev.metaKey)) {
+      } else if (!ev.ctrlKey && ((!this.isMac && ev.altKey) || (this.isMac && ev.metaKey))) {
         if (ev.keyCode >= 65 && ev.keyCode <= 90) {
           key = '\x1b' + String.fromCharCode(ev.keyCode + 32);
         } else if (ev.keyCode === 192) {
@@ -2574,8 +2594,6 @@ Terminal.prototype.keyDown = function(ev) {
       break;
   }
 
-  if (!key) return true;
-
   if (this.prefixMode) {
     this.leavePrefix();
     return cancel(ev);
@@ -2586,13 +2604,38 @@ Terminal.prototype.keyDown = function(ev) {
     return cancel(ev);
   }
 
-  this.emit('keydown', ev);
+  if (key) {
+    this.commitInput(key, ev);
+    return cancel(ev);
+  } else {
+    this.showBufferedText();
+  }
+
+  return true;
+};
+
+
+Terminal.prototype.showBufferedText = function() {
+  var inputElement = this.inputElement;
+  window.setTimeout(function() {
+    if (inputElement.value.length > 0 && inputElement.className.indexOf(' visible') === -1) {
+      inputElement.className += ' visible';
+    }
+  }, 0);
+};
+
+Terminal.prototype.commitInput = function(key, ev) {
+  var bufferedText = this.inputElement.value;
+  if (bufferedText.length > 0) {
+    key = bufferedText + key;
+    this.inputElement.value = '';
+    this.inputElement.className = this.inputElement.className.replace(' visible', '');
+  }
+
   this.emit('key', key, ev);
 
   this.showCursor();
   this.handler(key);
-
-  return cancel(ev);
 };
 
 Terminal.prototype.setgLevel = function(g) {
@@ -2622,7 +2665,7 @@ Terminal.prototype.keyPress = function(ev) {
     return false;
   }
 
-  if (!key || ev.ctrlKey || ev.altKey || ev.metaKey) return false;
+  if (!((key && !ev.ctrlKey) || (key && ev.altKey && ev.ctrlKey) || (key && ev.altKey) || (key && ev.altGraphKey))) return false;
 
   key = String.fromCharCode(key);
 
@@ -2637,11 +2680,7 @@ Terminal.prototype.keyPress = function(ev) {
     return false;
   }
 
-  this.emit('keypress', key, ev);
-  this.emit('key', key, ev);
-
-  this.showCursor();
-  this.handler(key);
+  this.commitInput(key, ev);
 
   return false;
 };
