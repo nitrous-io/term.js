@@ -695,9 +695,11 @@ Terminal.prototype.open = function(parent) {
     this.children.push(line);
   }
 
-  this.inputElement = document.createElement('input');
+  this.inputElement = document.createElement('textarea');
   this.inputElement.className = 'terminal-input';
-  this.inputElement.type = 'text';
+  this.inputElement.rows = '1';
+  this.inputElement.autocorrect = 'off';
+  this.inputElement.autocapitalize = 'off';
 
   this.containerElement = document.createElement('div');
   this.containerElement.type = 'text';
