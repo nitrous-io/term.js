@@ -755,6 +755,12 @@ Terminal.prototype.open = function(parent) {
   // them into terminal mouse protocols.
   this.bindMouse();
 
+  on(this.inputElement, 'paste', function(ev) {
+    window.setTimeout(function() {
+      self.commitInput('', ev);
+    }, 20);
+  });
+
   // Figure out whether boldness affects
   // the character width of monospace fonts.
   if (Terminal.brokenBold == null) {
