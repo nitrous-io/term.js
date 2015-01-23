@@ -704,8 +704,15 @@ Terminal.prototype.open = function(parent) {
   this.containerElement.className = 'terminal-container';
   this.containerElement.id = 'terminal_' + nextTerminalId++;
 
+  this.sizeIndicatorElement = document.createElement('div');
+  this.sizeIndicatorElement.type = 'text';
+  this.sizeIndicatorElement.className = 'terminal-size-indicator';
+  this.sizeIndicatorElement.innerHTML = '80x25';
+  this.sizeIndicatorElement.style.display = 'none';
+
   this.containerElement.appendChild(this.element);
   this.containerElement.appendChild(this.inputElement);
+  this.containerElement.appendChild(this.sizeIndicatorElement);
   this.parent.appendChild(this.containerElement);
 
   // Draw the screen.
@@ -2866,7 +2873,21 @@ Terminal.prototype.resize = function(x, y) {
   // to null for now.
   this.normal = null;
 
+  this.showSize(x, y);
   this.emit('resize', x, y);
+};
+
+Terminal.prototype.showSize = function(x, y) {
+  var sizeIndicatorElement = this.sizeIndicatorElement;
+  sizeIndicatorElement.innerHTML = x + 'x' + y;
+  sizeIndicatorElement.style.display = 'block';
+
+  if(this.showSizeTimeout != undefined) {
+    window.clearTimeout(this.showSizeTimeout);
+  }
+  this.showSizeTimeout = window.setTimeout(function() {
+    sizeIndicatorElement.style.display = 'none';
+  }, 2000);
 };
 
 Terminal.prototype.updateRange = function(y) {
