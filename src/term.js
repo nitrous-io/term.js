@@ -2394,7 +2394,7 @@ Terminal.prototype.writeln = function(data) {
 // https://developer.mozilla.org/en-US/docs/DOM/KeyboardEvent
 Terminal.prototype.keyDown = function(ev) {
   var self = this
-    , key;
+    , key = null;
 
   switch (ev.keyCode) {
     // backspace
@@ -2596,6 +2596,12 @@ Terminal.prototype.keyDown = function(ev) {
           // ^] - group sep
           key = String.fromCharCode(29);
         }
+      } else if (this.isMac && ev.metaKey && ev.keyCode === 86) {
+        // handle CMD+v on Mac
+        key = '';
+        window.setTimeout(function() {
+          self.commitInput('', ev);
+        }, 20);
       } else if (!ev.ctrlKey && ((!this.isMac && ev.altKey) || (this.isMac && ev.metaKey))) {
         if (ev.keyCode >= 65 && ev.keyCode <= 90) {
           key = '\x1b' + String.fromCharCode(ev.keyCode + 32);
@@ -2621,7 +2627,7 @@ Terminal.prototype.keyDown = function(ev) {
   if (key) {
     this.commitInput(key, ev);
     return cancel(ev);
-  } else {
+  } else if (key !== '') {
     this.showBufferedText();
   }
 
@@ -2666,6 +2672,12 @@ Terminal.prototype.setgCharset = function(g, charset) {
 
 Terminal.prototype.keyPress = function(ev) {
   var key;
+
+  // Filter out CMD+v (only for lowercase) on mac.
+  // This is only triggered in Firefox.
+  if(ev.metaKey && ev.charCode === 118) {
+    return false;
+  }
 
   cancel(ev);
 
