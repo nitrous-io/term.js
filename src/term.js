@@ -2678,9 +2678,9 @@ Terminal.prototype.setgCharset = function(g, charset) {
 Terminal.prototype.keyPress = function(ev) {
   var key;
 
-  // Filter out CMD+v (only for lowercase) on mac.
+  // Filter out CMD+c/v on mac.
   // This is only triggered in Firefox.
-  if(ev.metaKey && ev.charCode === 118) {
+  if(ev.metaKey && (ev.charCode === 67 || ev.charCode === 86 || ev.charCode == 99 || ev.charCode === 118)) {
     return false;
   }
 
