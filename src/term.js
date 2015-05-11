@@ -1026,6 +1026,24 @@ Terminal.prototype.bindMouse = function() {
   }
 
   on(el, 'mousedown', function(ev) {
+    // if any text is selected on mouse up, enter selection mode
+    once(window, 'mouseup', function(ev) {
+      if(window.getSelection) {
+        var selectedText = window.getSelection().toString();
+        if (selectedText.length > 0) {
+          self.selectionMode = true;
+        }
+      }
+      // selection clearance only happens after mouseup event
+      window.setTimeout(function() {
+        var selectedText = window.getSelection().toString();
+        if (selectedText.length === 0) {
+          self.selectionMode = false;
+          self.focus();
+        }
+      }, 0);
+    });
+
     if (!self.mouseEvents) return;
 
     // send the button
@@ -1066,24 +1084,6 @@ Terminal.prototype.bindMouse = function() {
   //if (self.normalMouse) {
   //  on(self.document, 'mousemove', sendMove);
   //}
-
-  // if any text is selected on mouse up, enter selection mode
-  on(el, 'mouseup', function(ev) {
-    if(window.getSelection) {
-      var selectedText = window.getSelection().toString();
-      if (selectedText.length > 0) {
-        self.selectionMode = true;
-      }
-    }
-    // selection clearance only happens after mouseup event
-    window.setTimeout(function() {
-      var selectedText = window.getSelection().toString();
-      if (selectedText.length === 0) {
-        self.selectionMode = false;
-        self.focus();
-      }
-    }, 0);
-  });
 
   on(el, wheelEvent, function(ev) {
     if (!self.mouseEvents) return;
