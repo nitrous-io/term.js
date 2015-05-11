@@ -1,11 +1,11 @@
 /**
- * term.js - an xterm emulator
+ * Nitrous fork of term.js
  *
  * MIT License
  * Copyright (c) 2012-2013, Christopher Jeffrey
  * Portions Copyright (c) 2012-2015 Nitrous Inc. (https://www.nitrous.io/)
  *
- * https://github.com/chjj/term.js
+ * https://github.com/nitrous-io/term.js
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
