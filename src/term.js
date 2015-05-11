@@ -5637,6 +5637,9 @@ Terminal.prototype.sizeToFit = function() {
     }
   }
 
+  cols = Math.max(10, cols);
+  rows = Math.max(4, rows);
+
   rowDiv.parentNode.removeChild(rowDiv);
   tempDiv.parentNode.removeChild(tempDiv);
   this.resize(cols, rows);
