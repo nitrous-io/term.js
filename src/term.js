@@ -5715,6 +5715,15 @@ function on(el, type, handler, capture) {
   el.addEventListener(type, handler, capture || false);
 }
 
+function once(el, type, handler, capture) {
+  var that = this;
+  var fn = function() {
+    el.removeEventListener(type, fn, capture || false);
+    return handler.apply(that, arguments);
+  };
+  el.addEventListener(type, fn, capture || false);
+}
+
 function off(el, type, handler, capture) {
   el.removeEventListener(type, handler, capture || false);
 }
