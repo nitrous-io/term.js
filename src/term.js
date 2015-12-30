@@ -3766,7 +3766,7 @@ Terminal.prototype.setMode = function(params) {
         this.insertMode = true;
         break;
       case 20:
-        //this.convertEol = true;
+        this.convertEol = true;
         break;
     }
   } else if (this.prefix === '?') {
@@ -3968,7 +3968,7 @@ Terminal.prototype.resetMode = function(params) {
         this.insertMode = false;
         break;
       case 20:
-        //this.convertEol = false;
+        this.convertEol = false;
         break;
     }
   } else if (this.prefix === '?') {
