@@ -2395,7 +2395,13 @@ Terminal.prototype.keyDown = function(ev) {
   switch (ev.keyCode) {
     // backspace
     case 8:
-      if (ev.shiftKey) {
+      if (!ev.shiftKey && ev.altKey) {
+        key = '\x1b\x7f';
+        break;
+      } else if (!ev.shiftKey && ev.metaKey && this.isMac) {
+        key = '\x15';
+        break;
+      } else if (ev.shiftKey) {
         key = '\x08'; // ^H
         break;
       }
@@ -2419,6 +2425,10 @@ Terminal.prototype.keyDown = function(ev) {
       break;
     // left-arrow
     case 37:
+      if (ev.altKey) {
+        key = '\x1bb';
+        break;
+      }
       if (this.applicationCursor) {
         key = '\x1bOD'; // SS3 as ^[O for 7-bit
         //key = '\x8fD'; // SS3 as 0x8f for 8-bit
@@ -2428,6 +2438,10 @@ Terminal.prototype.keyDown = function(ev) {
       break;
     // right-arrow
     case 39:
+      if (ev.altKey) {
+        key = '\x1bf';
+        break;
+      }
       if (this.applicationCursor) {
         key = '\x1bOC';
         break;
