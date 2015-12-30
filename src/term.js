@@ -1,3 +1,4 @@
+/*eslint-disable */
 /**
  * Nitrous fork of term.js
  *
@@ -5879,3 +5880,4 @@ if (typeof module !== 'undefined') {
 }).call(function() {
   return this || (typeof window !== 'undefined' ? window : global);
 }());
+/*eslint-enable */
